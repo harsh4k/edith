@@ -14,6 +14,9 @@ Minimal terminal dashboard for system monitoring.
 
 help, cpu, ram, disk, temp, monitor, stop, clear, exit
 
+`monitor` refreshes the dashboard every 2s — press any key to stop.
+Ctrl+C exits cleanly from anywhere.
+
 ## Install
 
 pip install psutil gputil
