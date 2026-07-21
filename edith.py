@@ -63,6 +63,28 @@ def get_stats():
     }
 
 
+# ===== INTERRUPTIBLE SLEEP =====
+def sleep_or_key(seconds):
+    """Sleep for `seconds`, returning True early if a key was pressed."""
+    if os.name == 'nt':
+        import msvcrt
+        end = time.time() + seconds
+        while time.time() < end:
+            if msvcrt.kbhit():
+                msvcrt.getch()
+                return True
+            time.sleep(0.05)
+        return False
+
+    import select
+    import sys
+    ready, _, _ = select.select([sys.stdin], [], [], seconds)
+    if ready:
+        sys.stdin.readline()
+        return True
+    return False
+
+
 # ===== DASHBOARD =====
 def dashboard(status="ACTIVE"):
     clear()
@@ -103,7 +125,11 @@ def run():
     monitoring = False
 
     while True:
-        cmd = input(W + "EDITH > " + R).lower()
+        try:
+            cmd = input(W + "EDITH > " + R).lower()
+        except (KeyboardInterrupt, EOFError):
+            print("\nShutting down EDITH...")
+            break
 
         if cmd == "help":
             print("help, cpu, ram, disk, temp, monitor, stop, clear, exit")
@@ -128,11 +154,17 @@ def run():
 
         elif cmd == "monitor":
             monitoring = True
-            print("Live monitor started (type 'stop')")
 
-            while monitoring:
-                dashboard("MONITORING")
-                time.sleep(2)
+            try:
+                while monitoring:
+                    dashboard("MONITORING")
+                    print("Press any key to stop...")
+                    if sleep_or_key(2):
+                        monitoring = False
+            except KeyboardInterrupt:
+                monitoring = False
+
+            dashboard()
 
         elif cmd == "stop":
             monitoring = False
