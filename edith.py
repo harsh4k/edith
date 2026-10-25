@@ -10,10 +10,10 @@ from datetime import datetime
 import psutil
 
 # ===== COLORS (WARM THEME) =====
-W = "\033[97m"   # white
-Y = "\033[93m"   # yellow
-O = "\033[91m"   # orange/red
-R = "\033[0m"    # reset
+W = "\033[97m"  # white
+Y = "\033[93m"  # yellow
+O = "\033[91m"  # orange/red  # noqa: E741 (replaced in the design pass)
+R = "\033[0m"  # reset
 
 GB = 1024**3
 
@@ -23,7 +23,7 @@ CPU_SENSORS = ("coretemp", "k10temp", "zenpower", "cpu_thermal", "cpu-thermal", 
 
 # ===== CLEAR =====
 def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 # ===== FORMATTING =====
@@ -50,9 +50,13 @@ def cpu_temperature():
 
 def find_nvidia_smi():
     path = shutil.which("nvidia-smi")
-    if path is None and os.name == 'nt':
-        legacy = os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"),
-                              "NVIDIA Corporation", "NVSMI", "nvidia-smi.exe")
+    if path is None and os.name == "nt":
+        legacy = os.path.join(
+            os.environ.get("ProgramFiles", r"C:\Program Files"),
+            "NVIDIA Corporation",
+            "NVSMI",
+            "nvidia-smi.exe",
+        )
         if os.path.isfile(legacy):
             path = legacy
     return path
@@ -73,9 +77,11 @@ def gpu_stats():
         return None, None
     try:
         out = subprocess.run(
-            [smi, "--query-gpu=utilization.gpu,temperature.gpu",
-             "--format=csv,noheader,nounits"],
-            capture_output=True, text=True, timeout=2, check=True,
+            [smi, "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=True,
         ).stdout
         load, temp = out.splitlines()[0].split(",")
     except (OSError, subprocess.SubprocessError, ValueError, IndexError):
@@ -86,8 +92,8 @@ def gpu_stats():
 # ===== CPU =====
 # psutil.cpu_percent() averages since its previous call: calls milliseconds
 # apart return noise (0% or 50%), calls minutes apart hide the current load.
-CPU_MIN_AGE = 0.5   # reuse a reading younger than this
-CPU_MAX_AGE = 5.0   # older than this, measure afresh for 0.3s
+CPU_MIN_AGE = 0.5  # reuse a reading younger than this
+CPU_MAX_AGE = 5.0  # older than this, measure afresh for 0.3s
 _cpu_last = {"time": None, "value": 0.0}
 
 
@@ -110,7 +116,7 @@ def ram_gb():
 
 
 def disk_gb():
-    disk = psutil.disk_usage('/')
+    disk = psutil.disk_usage("/")
     return round(disk.used / GB, 2), round(disk.total / GB, 2)
 
 
@@ -142,7 +148,7 @@ def single_keys():
     Held for the whole monitor session so keys pressed mid-redraw aren't echoed.
     Yields True when active; otherwise sleep_or_key() falls back to whole lines.
     """
-    if os.name == 'nt' or not sys.stdin.isatty():
+    if os.name == "nt" or not sys.stdin.isatty():
         yield False
         return
     import termios
@@ -163,8 +169,9 @@ def single_keys():
 
 def sleep_or_key(seconds, single=False):
     """Sleep for `seconds`, returning True early if a key was pressed."""
-    if os.name == 'nt':
+    if os.name == "nt":
         import msvcrt
+
         end = time.time() + seconds
         while time.time() < end:
             if msvcrt.kbhit():
@@ -181,6 +188,7 @@ def sleep_or_key(seconds, single=False):
         return False
     if single:
         import termios
+
         termios.tcflush(sys.stdin.fileno(), termios.TCIFLUSH)  # drop key + escape bytes
     else:
         sys.stdin.readline()
@@ -195,9 +203,9 @@ def dashboard(status="ACTIVE"):
     time_now = datetime.now().strftime("%H:%M:%S")
     date_now = datetime.now().strftime("%d-%m-%Y")
 
-    print(Y + "="*50)
+    print(Y + "=" * 50)
     print("         EDITH TERMINAL")
-    print("="*50 + R)
+    print("=" * 50 + R)
 
     print(O + f"STATUS: {status}\n" + R)
 
@@ -218,7 +226,7 @@ def dashboard(status="ACTIVE"):
     print(Y + "\n[ COMMANDS ]" + R)
     print("help   cpu   ram   disk   temp   monitor   clear   exit")
 
-    print(Y + "\n" + "-"*50 + R)
+    print(Y + "\n" + "-" * 50 + R)
 
 
 # ===== MAIN LOOP =====
@@ -254,8 +262,7 @@ def run():
 
         elif cmd == "temp":
             _, gpu_temp = gpu_stats()
-            print(f"CPU Temp: {fmt(cpu_temperature(), '°C')} | "
-                  f"GPU Temp: {fmt(gpu_temp, '°C')}")
+            print(f"CPU Temp: {fmt(cpu_temperature(), '°C')} | GPU Temp: {fmt(gpu_temp, '°C')}")
 
         elif cmd == "monitor":
             try:
