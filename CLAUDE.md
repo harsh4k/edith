@@ -43,5 +43,5 @@ pytest
 - [x] `pyproject.toml`, `edith` entry point, MIT licence, ruff config
 - [x] Tests + GitHub Actions matrix (Ubuntu / Windows / macOS × Python 3.10 and 3.13)
 - [x] Design pass: usage bars, warning thresholds, width-aware layout, `NO_COLOR`
-- [ ] README with screenshot
+- [x] README with screenshot
 - Later, only if wanted: network I/O, top processes, battery
