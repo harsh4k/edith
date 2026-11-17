@@ -31,7 +31,7 @@ Repository = "https://github.com/harsh4k/edith"
 edith = "edith:run"
 
 [tool.setuptools]
-py-modules = ["edith"]
+py-modules = ["edith", "edith_display"]
 
 [tool.ruff]
 line-length = 100

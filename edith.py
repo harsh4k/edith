@@ -1,19 +1,22 @@
 import os
-import platform
 import shutil
 import subprocess
 import sys
 import time
 from contextlib import contextmanager
-from datetime import datetime
 
 import psutil
 
-# ===== COLORS (WARM THEME) =====
-W = "\033[97m"  # white
-Y = "\033[93m"  # yellow
-O = "\033[91m"  # orange/red  # noqa: E741 (replaced in the design pass)
-R = "\033[0m"  # reset
+from edith_display import (
+    ACCENT,
+    TEMP_CRIT,
+    TEMP_WARN,
+    paint,
+    paint_level,
+    render_dashboard,
+    usage_percent,
+)
+from edith_display import fmt as fmt
 
 GB = 1024**3
 
@@ -24,12 +27,6 @@ CPU_SENSORS = ("coretemp", "k10temp", "zenpower", "cpu_thermal", "cpu-thermal", 
 # ===== CLEAR =====
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
-
-
-# ===== FORMATTING =====
-def fmt(value, unit=""):
-    """Format a stat, showing N/A (without a unit) when it is unavailable."""
-    return "N/A" if value is None else f"{value}{unit}"
 
 
 # ===== SENSORS =====
@@ -198,34 +195,7 @@ def sleep_or_key(seconds, single=False):
 def dashboard(status="ACTIVE"):
     stats = get_stats()  # collect first so the screen isn't blank while sampling
     clear()
-
-    time_now = datetime.now().strftime("%H:%M:%S")
-    date_now = datetime.now().strftime("%d-%m-%Y")
-
-    print(Y + "=" * 50)
-    print("         EDITH TERMINAL")
-    print("=" * 50 + R)
-
-    print(O + f"STATUS: {status}\n" + R)
-
-    print(Y + "[ SYSTEM STATS ]" + R)
-    print(f"CPU   : {stats['cpu']}%")
-    print(f"GPU   : {fmt(stats['gpu'], '%')}")
-    print(f"RAM   : {stats['ram_used']} / {stats['ram_total']} GB")
-    print(f"DISK  : {stats['disk_used']} / {stats['disk_total']} GB")
-
-    print(f"\nTEMP  : CPU {fmt(stats['cpu_temp'], '°C')} | GPU {fmt(stats['gpu_temp'], '°C')}")
-    print(f"CACHE : {fmt(stats['cache'], ' GB')}")
-
-    print(Y + "\n[ INFO ]" + R)
-    print(f"TIME  : {time_now}")
-    print(f"DATE  : {date_now}")
-    print(f"OS    : {platform.system()}")
-
-    print(Y + "\n[ COMMANDS ]" + R)
-    print("help   cpu   ram   disk   temp   monitor   clear   exit")
-
-    print(Y + "\n" + "-" * 50 + R)
+    render_dashboard(stats, status)
 
 
 # ===== MAIN LOOP =====
@@ -234,7 +204,7 @@ def run():
 
     while True:
         try:
-            cmd = input(W + "EDITH > " + R).strip().lower()
+            cmd = input(paint("EDITH > ", ACCENT)).strip().lower()
         except (KeyboardInterrupt, EOFError):
             print("\nShutting down EDITH...")
             break
@@ -249,19 +219,23 @@ def run():
             dashboard()
 
         elif cmd == "cpu":
-            print(f"CPU Usage: {cpu_usage()}%")
+            value = cpu_usage()
+            print("CPU Usage: " + paint_level(fmt(value, "%"), value))
 
         elif cmd == "ram":
             used, total = ram_gb()
-            print(f"RAM: {used} / {total} GB")
+            print("RAM: " + paint_level(f"{used} / {total} GB", usage_percent(used, total)))
 
         elif cmd == "disk":
             used, total = disk_gb()
-            print(f"Disk: {used} / {total} GB")
+            print("Disk: " + paint_level(f"{used} / {total} GB", usage_percent(used, total)))
 
         elif cmd == "temp":
             _, gpu_temp = gpu_stats()
-            print(f"CPU Temp: {fmt(cpu_temperature(), '°C')} | GPU Temp: {fmt(gpu_temp, '°C')}")
+            cpu_temp = cpu_temperature()
+            cpu_text = paint_level(fmt(cpu_temp, "°C"), cpu_temp, TEMP_WARN, TEMP_CRIT)
+            gpu_text = paint_level(fmt(gpu_temp, "°C"), gpu_temp, TEMP_WARN, TEMP_CRIT)
+            print(f"CPU Temp: {cpu_text} | GPU Temp: {gpu_text}")
 
         elif cmd == "monitor":
             try:

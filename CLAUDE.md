@@ -6,7 +6,7 @@ no server, no network. Type a command to get CPU / RAM / disk / cache / temperat
 stats, or run `monitor` for a live view that refreshes every 2 seconds.
 
 ## Stack
-- Python 3.10+, single module: `edith.py`
+- Python 3.10+, two modules: `edith.py` (measuring, commands, keys) and `edith_display.py`
 - Runtime dependency: `psutil` only
 - GPU: `nvidia-smi` called directly with `subprocess` (no shell, 2s timeout). No NVIDIA
   GPU or driver means `N/A`, never a crash
@@ -24,7 +24,8 @@ pytest
 ```
 
 ## Conventions
-- Keep it one file. Split only if `edith.py` passes ~300 lines.
+- Keep each module under ~300 lines; split further only when one passes that.
+- `edith_display.py` holds formatting, colour, usage bars, and dashboard rendering.
 - Measuring lives in small helpers (`cpu_usage`, `ram_gb`, `disk_gb`, `cpu_temperature`,
   `gpu_stats`); `get_stats()` composes them; commands only format.
 - Unavailable hardware returns `None`; `fmt()` turns it into `N/A` without a unit.
@@ -41,6 +42,6 @@ pytest
 - [x] Fix GPU on Python 3.12+, CPU first-read, any-key on POSIX
 - [x] `pyproject.toml`, `edith` entry point, MIT licence, ruff config
 - [x] Tests + GitHub Actions matrix (Ubuntu / Windows / macOS × Python 3.10 and 3.13)
-- [ ] Design pass: usage bars, warning thresholds, width-aware layout, `NO_COLOR`
+- [x] Design pass: usage bars, warning thresholds, width-aware layout, `NO_COLOR`
 - [ ] README with screenshot
 - Later, only if wanted: network I/O, top processes, battery
