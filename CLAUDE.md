@@ -40,7 +40,7 @@ pytest
 ## Roadmap
 - [x] Fix GPU on Python 3.12+, CPU first-read, any-key on POSIX
 - [x] `pyproject.toml`, `edith` entry point, MIT licence, ruff config
-- [ ] Tests + GitHub Actions matrix (Ubuntu / Windows / macOS × Python 3.10 and 3.13)
+- [x] Tests + GitHub Actions matrix (Ubuntu / Windows / macOS × Python 3.10 and 3.13)
 - [ ] Design pass: usage bars, warning thresholds, width-aware layout, `NO_COLOR`
 - [ ] README with screenshot
 - Later, only if wanted: network I/O, top processes, battery
