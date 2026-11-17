@@ -44,8 +44,7 @@ def cpu_temperature():
     for name in CPU_SENSORS:
         if temps.get(name):
             return temps[name][0].current
-    first = next(iter(temps.values()))
-    return first[0].current if first else None
+    return next((readings[0].current for readings in temps.values() if readings), None)
 
 
 def find_nvidia_smi():

@@ -43,10 +43,19 @@ def test_to_int(field, expected):
     [
         ({"acpitz": [Sensor(30)], "coretemp": [Sensor(60), Sensor(70)]}, 60),
         ({"other": [Sensor(45)], "another": [Sensor(50)]}, 45),
+        ({"other": [], "another": [Sensor(50)]}, 50),
+        ({"other": [], "another": []}, None),
         ({}, None),
         ({"coretemp": []}, None),
     ],
-    ids=["preferred-sensor", "first-sensor-fallback", "no-sensors", "empty-sensor"],
+    ids=[
+        "preferred-sensor",
+        "first-sensor-fallback",
+        "skip-empty-fallback",
+        "all-empty",
+        "no-sensors",
+        "empty-sensor",
+    ],
 )
 def test_cpu_temperature(monkeypatch, temperatures, expected):
     monkeypatch.setattr(edith.psutil, "sensors_temperatures", lambda: temperatures, raising=False)
